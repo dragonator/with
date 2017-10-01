@@ -54,6 +54,9 @@ pmpt=${prefix[*]}
 
 setup()
 {
+  # enable aliases
+  shopt -s expand_aliases
+  source ~/.bash_aliases
 
   # source bash completions
   [ -f /etc/bash_completion ] && source /etc/bash_completion
