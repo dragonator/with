@@ -45,7 +45,7 @@ case ${prefix[*]} in
   "-h"|"--help")
     print_help;;
   -*|--*)
-    echo "Unrecognised option:" ${prefix[*]}
+    echo "Unrecognised option:" "${prefix[*]}"
     print_options
     exit 1;;
 esac
@@ -79,6 +79,7 @@ setup()
   __mag="$(tput setaf 5)"
   __cyn="$(tput setaf 6)"
   __wht="$(tput setaf 7)"
+  __bold="$(tput bold)"
 
   __bold_blk="$__bold$__blk"
   __bold_red="$__bold$__red"
@@ -130,7 +131,8 @@ setup()
 }
 
 __print_prompt() {
-  __prefix="${prefix[*]}" print_prompt "$@"
+  __prefix="${prefix[*]}"
+  print_prompt "$@"
 }
 
 print_prompt() {
@@ -156,7 +158,8 @@ print_prompt() {
 
     "${SED_COMMAND_LINE[@]}" -e "s/%nc%/$__nc/g"
   }
-  local __escaped_prefix=$(echo -n "$__prefix" | sed -e 's/\./\\./g' -e 's/\//\\\//g')
+  local __escaped_prefix
+  __escaped_prefix=$(echo -n "$__prefix" | sed -e 's/\./\\./g' -e 's/\//\\\//g')
   echo -n "$*" | colorise_prompt | sed -E -e "s/%prefix%/$__escaped_prefix/g" \
                                           -e "s/\\$/$(hashdollar)/g"
 }
@@ -185,8 +188,8 @@ with_completion()
 
   # get index of word to be completed
   local whitespaces_count escaped_whitespaces_count
-  whitespaces_count=$(echo "$COMP_LINE" | grep -o ' ' | wc -l)
-  escaped_whitespaces_count=$(echo "$COMP_LINE" | grep -o '\\ ' | wc -l)
+  whitespaces_count=$(echo "$COMP_LINE" | grep -c -o ' ')
+  escaped_whitespaces_count=$(echo "$COMP_LINE" | grep -c -o '\\ ')
   COMP_CWORD=$((whitespaces_count-escaped_whitespaces_count))
 
   # get sourced completion command
@@ -208,7 +211,7 @@ with_completion()
   else
     # construct compgen command
     local compgen_command
-    compgen_command=$(echo "$complete_command" | sed 's/^complete/compgen/g')
+    compgen_command="${complete_command/complete/compgen}"
     compgen_command="${compgen_command//$program_name/$completion_word}"
 
     # generate completions
@@ -340,7 +343,7 @@ main()
   HISTCONTROL=ignoreboth
 
   # run script setup
-  setup
+  setup "$@"
 
   if [ "$1" == "" ]; then
     print_usage
